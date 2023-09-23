@@ -21,6 +21,11 @@ pip install openpyxl
 ```
 
 This should install the needed dependencies in your default python environment.
+You can activate the environment with:
+
+```
+conda activate msh_test
+```
 
 4. Edit the testing_msh.py file and set the cwd path to the absolute path of your minishell project folder.
 5. Download the tester spreadsheet [HERE]{https://docs.google.com/spreadsheets/d/1uJHQu0VPsjjBkR4hxOeCMEt3AOM1Hp_SmUzPFhAH-nA/edit#gid=0} as an xlsx file and place in the same directory as testing_msh.py
