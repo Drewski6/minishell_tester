@@ -39,4 +39,6 @@ python3 testing_msh.py > test.log
 8. Some notes about the log file:
 	1. The test number is the same number as the row number in the spreadsheet.
 	2. Some tests are excluded and these are located in the ignore_list because they cause issues with the tester. You can add tests to this list if you like.
-	3. 
+
+# ToDo:
+	1. add a check for sections so the user can select if they want to check bonuses or not.
