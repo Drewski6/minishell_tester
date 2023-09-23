@@ -20,9 +20,10 @@ pip install pandas
 pip install openpyxl
 ```
 
-	This should install the needed dependencies in your default python environment.
-4. Edit the testing_msh.py file and set the cwd path to the absolute path to your minishell project folder.
-5. Download the tester spreadsheet as an xlsx file and place in the same directory as testing_msh.py
+This should install the needed dependencies in your default python environment.
+
+4. Edit the testing_msh.py file and set the cwd path to the absolute path of your minishell project folder.
+5. Download the tester spreadsheet [HERE]{https://docs.google.com/spreadsheets/d/1uJHQu0VPsjjBkR4hxOeCMEt3AOM1Hp_SmUzPFhAH-nA/edit#gid=0} as an xlsx file and place in the same directory as testing_msh.py
 6. Run the tester:
 
 ```
