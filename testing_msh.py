@@ -10,7 +10,7 @@ cwd = "/home/drew/Documents/ecole_42/minishell"
 bash_path = "bash"
 ignore_list = [601 - 2]
 start = 700 - 2  # start = 28 - 2 # actual start
-end = 769 - 2  # end = 769 - 2 # actual end
+end = 709 - 2  # end = 769 - 2 # actual end
 tests_conducted = 0
 tests_succeeded = 0
 files_to_delete = [
@@ -32,6 +32,17 @@ files_to_delete = [
 ]
 
 
+def tab_form(check):
+    return str(check).replace("\n", "\n\t\t\t")
+
+
+def p_form(check):
+    if check:
+        return ">>>>"
+    else:
+        return "    "
+
+
 def cleanup_test_files(files_to_delete):
     if files_to_delete:
         sp.run(
@@ -49,6 +60,9 @@ def print_results(tests_conducted, tests_succeeded):
 
 
 def run_test(test):
+    stdoutdiff = False
+    stderrdiff = False
+    returndiff = False
     result_msh = sp.run(
         f"echo '{test}' | {minishell_path}",
         shell=True,
@@ -65,26 +79,27 @@ def run_test(test):
         text=True,
         cwd=cwd,
     )
-    if (
-        result_msh.stdout == result_bash.stdout
-        and result_msh.stderr == result_bash.stderr
-        and result_msh.returncode == result_bash.returncode
-    ):
+    if result_msh.stdout != result_bash.stdout:
+        stdoutdiff = True
+    if result_msh.stderr != result_bash.stderr:
+        stderrdiff = True
+    if result_msh.returncode != result_bash.returncode:
+        returndiff = True
+    if not stdoutdiff and not stderrdiff and not returndiff:
         print(" OK!")
         return 0
     else:
-        print("\n\n\tRESULTS MINISHELL")
-        print(f"\ttest  : {test}")
-        fix_stdout = result_msh.stdout
-        print(f"\tstdout: {fix_stdout}")
-        print(f"\tstderr: {result_msh.stderr[:-1]}")
-        print(f"\treturn: {result_msh.returncode}")
+        print("\n****RESULTS MINISHELL****")
+        print(f"    test:\t{tab_form(test)}")
+        print(f"{p_form(stdoutdiff)}stdout: {tab_form(result_msh.stdout)}")
+        print(f"{p_form(stderrdiff)}stderr: {tab_form(result_msh.stderr[:-1])}")
+        print(f"{p_form(returndiff)}return: {tab_form(result_msh.returncode)}")
 
-        print("\n\tRESULTS BASH")
-        print(f"\ttest  : {test}")
-        print(f"\tstdout: {result_bash.stdout}")
-        print(f"\tstderr: {result_bash.stderr}")
-        print(f"\treturn: {result_bash.returncode}")
+        print("\n****RESULTS BASH****")
+        print(f"    test:\t{tab_form(test)}")
+        print(f"{p_form(stdoutdiff)}stdout: {tab_form(result_bash.stdout)}")
+        print(f"{p_form(stderrdiff)}stderr: {tab_form(result_bash.stderr)}")
+        print(f"{p_form(returndiff)}return: {tab_form(result_bash.returncode)}\n")
     return 1
 
 
