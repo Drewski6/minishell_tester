@@ -1,15 +1,18 @@
-## IMPORTS
+## IMPORTS ##
 import pandas as pd
 import subprocess as sp
 
 
-## SETTINGS
+## SETTINGS ##
 testing_file = "unit_tests.xlsx"
 minishell_path = "./minishell"
 cwd = "/home/drew/Documents/ecole_42/minishell"
 bash_path = "bash"
-start = 28 - 2  # start = 28 - 2 # actual start
-end = 770 - 2  # end = 770 - 2 # actual end
+offset = 2  # offset is used so that the pandas row number
+# and the actual row number are the same.
+# This makes looking up tests easier.
+start = 28 - offset  # start = 28 - 2 # actual start is row 26
+end = 770 - offset  # end = 770 - 2 # actual end is row 769
 tests_conducted = 0
 tests_succeeded = 0
 files_to_delete = [
@@ -20,6 +23,7 @@ files_to_delete = [
     "c",
     "d",
     "e",
+    "ls",
     "hey",
     "hola*",
     "'$HOLA'",
@@ -29,7 +33,7 @@ files_to_delete = [
     "srcs/hello",
     "srcs/bonjour",
 ]
-ignore_list = [601 - 2, 459 - 2, 655 - 2]
+ignore_list = [601 - offset, 459 - offset, 655 - offset]
 # 601 is
 # 459 does chmod 000 on minishell rendering all tests failure afterwards
 # 655 our minishell outputs garbage after NEED TO FIX THIS
@@ -111,7 +115,7 @@ df = pd.read_excel(testing_file)
 for line in range(start, end):
     if line in ignore_list:
         continue
-    print(f"TEST {line + 2}", end="")
+    print(f"TEST {line + offset}", end="")
     test_col = 1
     bash_col = 7
     tests = [
@@ -124,6 +128,6 @@ for line in range(start, end):
     tests_conducted = tests_conducted + 1
     if not run_test(test):
         tests_succeeded = tests_succeeded + 1
+    cleanup_test_files(files_to_delete)
 
-cleanup_test_files(files_to_delete)
 print_results(tests_conducted, tests_succeeded)
