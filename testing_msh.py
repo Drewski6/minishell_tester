@@ -13,14 +13,32 @@ start = 700 - 2  # start = 28 - 2 # actual start
 end = 769 - 2  # end = 769 - 2 # actual end
 tests_conducted = 0
 tests_succeeded = 0
+files_to_delete = [
+    "dir",
+    "a",
+    "b",
+    "bonjour*",
+    "c",
+    "d",
+    "e",
+    "hey",
+    "hola*",
+    "'$HOLA'",
+    "HOLA",
+    "ls1",
+    "pwd",
+    "srcs/hello",
+    "srcs/bonjour",
+]
 
 
-def cleanup_test_files():
-    sp.run(
-        "rm -rf dir a b bonjour* c d e hey hola* HOLA ls1 pwd srcs/hello srcs/bonjour",
-        shell=True,
-        cwd=cwd,
-    )
+def cleanup_test_files(files_to_delete):
+    if files_to_delete:
+        sp.run(
+            f'rm -rf {" ".join(files_to_delete)}',
+            shell=True,
+            cwd=cwd,
+        )
 
 
 def print_results(tests_conducted, tests_succeeded):
@@ -89,5 +107,5 @@ for line in range(start, end):
     if not run_test(test):
         tests_succeeded = tests_succeeded + 1
 
-cleanup_test_files()
+cleanup_test_files(files_to_delete)
 print_results(tests_conducted, tests_succeeded)
