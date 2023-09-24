@@ -1,7 +1,7 @@
 ## IMPORTS ##
 import pandas as pd
 import subprocess as sp
-
+import argparse
 
 ## SETTINGS ##
 testing_file = "unit_tests.xlsx"
@@ -39,18 +39,18 @@ ignore_list = [601 - offset, 459 - offset, 655 - offset]
 # 655 our minishell outputs garbage after NEED TO FIX THIS
 
 
-def tab_form(check):
-    return str(check).replace("\n", "\n\t\t\t")
+def tab_form(check: str):
+    return str(check).replace("\n", "\n            ")
 
 
-def p_form(check):
+def line_form(check: bool):
     if check:
         return ">>>>"
     else:
         return "    "
 
 
-def cleanup_test_files(files_to_delete):
+def cleanup_test_files(files_to_delete: list[str]):
     if files_to_delete:
         sp.run(
             f'rm -rf {" ".join(files_to_delete)}',
@@ -59,14 +59,14 @@ def cleanup_test_files(files_to_delete):
         )
 
 
-def print_results(tests_conducted, tests_succeeded):
-    print("\n\n*******************\n\n")
+def print_results(tests_conducted: int, tests_succeeded: int):
+    print("\n*******************\n")
     print(f"Total tests: {tests_conducted}")
     print(f"Successes  : {tests_succeeded}")
     print(f"Percentage : {tests_succeeded / tests_conducted * 100:.2f}%")
 
 
-def run_test(test):
+def run_test(test: str):
     stdoutdiff = False
     stderrdiff = False
     returndiff = False
@@ -92,42 +92,74 @@ def run_test(test):
         stderrdiff = True
     if result_msh.returncode != result_bash.returncode:
         returndiff = True
+    print(f"TEST {line + offset}", end="")
     if not stdoutdiff and not stderrdiff and not returndiff:
         print(" OK!")
         return 0
     else:
-        print("\n    RESULTS MINISHELL")
-        print(f"    test:\t{tab_form(test)}")
-        print(f"{p_form(stdoutdiff)}stdout: {tab_form(result_msh.stdout)}")
-        print(f"{p_form(stderrdiff)}stderr: {tab_form(result_msh.stderr[:-1])}")
-        print(f"{p_form(returndiff)}return: {tab_form(result_msh.returncode)}")
+        print(f" Error!\n\n{test}")
+        print("    RESULTS MINISHELL")
+        # print(f"    test:    {tab_form(test)}")
+        print(f"{line_form(stdoutdiff)}stdout: {tab_form(result_msh.stdout)}")
+        print(f"{line_form(stderrdiff)}stderr: {tab_form(result_msh.stderr[:-1])}")
+        print(f"{line_form(returndiff)}return: {tab_form(str(result_msh.returncode))}")
 
         print("\n    RESULTS BASH")
-        print(f"    test:\t{tab_form(test)}")
-        print(f"{p_form(stdoutdiff)}stdout: {tab_form(result_bash.stdout)}")
-        print(f"{p_form(stderrdiff)}stderr: {tab_form(result_bash.stderr)}")
-        print(f"{p_form(returndiff)}return: {tab_form(result_bash.returncode)}\n")
+        # print(f"    test:    {tab_form(test)}")
+        print(f"{line_form(stdoutdiff)}stdout: {tab_form(result_bash.stdout)}")
+        print(f"{line_form(stderrdiff)}stderr: {tab_form(result_bash.stderr)}")
+        print(
+            f"{line_form(returndiff)}return: {tab_form(str(result_bash.returncode))}\n"
+        )
     return 1
 
 
-df = pd.read_excel(testing_file)
-
-for line in range(start, end):
-    if line in ignore_list:
-        continue
-    print(f"TEST {line + offset}", end="")
-    test_col = 1
-    bash_col = 7
+def get_test_input(line: int):
     tests = [
         i[3:] if i[:3] == "$> " else i for i in df.iloc[line, test_col].split("\n")
     ]
     test = "\n".join(tests)
     test += "\n"
-    bash = df.iloc[line, bash_col]
-    i = line
+    return test
+
+
+parser = argparse.ArgumentParser(description="A tester for minishell.")
+parser.add_argument(
+    "arg1",
+    type=int,
+    nargs="?",
+    default=-1,
+    help="An integer value of the specific test you'd like to perform",
+)
+parser.add_argument(
+    "arg2",
+    type=int,
+    nargs="?",
+    default=-1,
+    help="An integer value of the specific test you'd like to perform",
+)
+args = parser.parse_args()
+df = pd.read_excel(testing_file)
+test_col = 1
+bash_col = 7
+if args.arg1 >= 26 and args.arg1 <= 769 and args.arg2 >= 26 and args.arg2 <= 769:
+    start = args.arg1 - offset
+    end = args.arg2 - offset + 1
+if args.arg1 != -1 and args.arg2 == -1:
+    line = args.arg1 - offset
     tests_conducted = tests_conducted + 1
+    test = get_test_input(line)
     if not run_test(test):
         tests_succeeded = tests_succeeded + 1
     cleanup_test_files(files_to_delete)
+else:
+    for line in range(start, end):
+        if line in ignore_list:
+            continue
+        test = get_test_input(line)
+        tests_conducted = tests_conducted + 1
+        if not run_test(test):
+            tests_succeeded = tests_succeeded + 1
+        cleanup_test_files(files_to_delete)
 
 print_results(tests_conducted, tests_succeeded)
