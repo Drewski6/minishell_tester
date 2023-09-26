@@ -170,18 +170,21 @@ parser.add_argument(
 )
 parser.add_argument(
     "--no_stdout",
+    "-no",
     action="store_false",
-    help="Flag: if set, test will skip comparisons to stdout."
+    help="test will skip comparisons to stdout."
 )
 parser.add_argument(
     "--no_stderr",
+    "-ne",
     action="store_false",
-    help="Flag: if set, test will skip comparisons to stderr."
+    help="test will skip comparisons to stderr."
 )
 parser.add_argument(
     "--no_return",
+    "-nr",
     action="store_false",
-    help="Flag: if set, test will skip comparisons to return."
+    help="test will skip comparisons to return."
 )
 args = parser.parse_args()
 df = pd.read_excel(testing_file)
