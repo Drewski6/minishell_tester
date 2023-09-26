@@ -159,14 +159,14 @@ parser.add_argument(
     type=int,
     nargs="?",
     default=-1,
-    help="An integer value of the specific test you'd like to perform",
+    help="An integer value of the specific test you'd like to perform, or starting test if another integer is given.",
 )
 parser.add_argument(
     "arg2",
     type=int,
     nargs="?",
     default=-1,
-    help="An integer value of the specific test you'd like to perform",
+    help="If a first integer is given, second integer indicates last test to exec.",
 )
 parser.add_argument(
     "--no_stdout",
