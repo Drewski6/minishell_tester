@@ -113,12 +113,15 @@ def run_test(test: str):
         text=True,
         cwd=cwd,
     )
-    if result_msh.stdout != result_bash.stdout:
-        stdoutdiff = True
-    if result_msh.stderr != result_bash.stderr:
-        stderrdiff = True
-    if result_msh.returncode != result_bash.returncode:
-        returndiff = True
+    if args.no_stdout:
+        if result_msh.stdout != result_bash.stdout:
+            stdoutdiff = True
+    if args.no_stderr:
+        if result_msh.stderr != result_bash.stderr:
+            stderrdiff = True
+    if args.no_return:
+        if result_msh.returncode != result_bash.returncode:
+            returndiff = True
     print(f"TEST {line + offset}", end="")
     if not stdoutdiff and not stderrdiff and not returndiff:
         print(" OK!")
@@ -164,6 +167,21 @@ parser.add_argument(
     nargs="?",
     default=-1,
     help="An integer value of the specific test you'd like to perform",
+)
+parser.add_argument(
+    "--no_stdout",
+    action="store_false",
+    help="Flag: if set, test will skip comparisons to stdout."
+)
+parser.add_argument(
+    "--no_stderr",
+    action="store_false",
+    help="Flag: if set, test will skip comparisons to stderr."
+)
+parser.add_argument(
+    "--no_return",
+    action="store_false",
+    help="Flag: if set, test will skip comparisons to return."
 )
 args = parser.parse_args()
 df = pd.read_excel(testing_file)
