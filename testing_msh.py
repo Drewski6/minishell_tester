@@ -6,7 +6,7 @@ import argparse
 ## SETTINGS ##
 testing_file = "unit_tests.xlsx"
 minishell_path = "./minishell"
-cwd = "/home/drew/Documents/ecole_42/minishell"
+cwd = "/mnt/nfs/homes/dpentlan/Documents/ecole_42/minishell"
 bash_path = "bash"
 offset = 2  # offset is used so that the pandas row number
 # and the actual row number are the same.
@@ -33,7 +33,34 @@ files_to_delete = [
     "srcs/hello",
     "srcs/bonjour",
 ]
-ignore_list = [601 - offset, 459 - offset, 655 - offset]
+ignore_list = [i - offset for i in 
+[
+ 459, #does chmod 000 on minishell rendering all tests failure afterwards
+ 28, #tests :
+ 29,364, #tests !
+ 282, #tests job control (&)
+ 47,48,49,347,704, #tests escaped character (\)
+ 61,62,63,284,348, #tests semicolon (;)
+ 64,65,66,280,281,601,602,603,604,613,614,615,616,617,618,628, #tests bonus feature (parens)
+ 72,73, #tests wildcards not in cwd (*/*)
+ 74,681, #tests . (source)
+ 76,367,444,445,446,472, #tests ~ (expands to value of HOME)
+ 77,78, # tests local vars (FOO=BAR)
+ 94,118,128,249,255,256,279, # tests escaped character (\n \$ \\ ...)
+ 124, # tests shell args ($9)
+ 150,153,154,155,165,166,167,170,171, # tests the gettext feature ($"SOMETHING")
+ 211,212,213,214,215,216,217,218,219,220,221,222,223, #tests with signals, need to be done manually (^C/^D)
+ 387,735, # requires manual testing
+ 225,226,227,228,229,230, # tests env with argument(s)
+ 233,234,235,237, # tests UB (Yes really ! check the man !)
+ 368, # tests history
+ 392,393,394,395,# tests pwd with options
+ 455,456,457,458, # idk spreadhseet says these are unhandled
+ 59,60,575,576,578,579,580,581,582,5823,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
+]]
+#still included
+# 71,129,140,141,142,143,144,145,146,147,148,149,447,448,449,764,765,766,767,768,769, #tests bonus feature (wildcard)
+# 
 # 601 is
 # 459 does chmod 000 on minishell rendering all tests failure afterwards
 # 655 our minishell outputs garbage after NEED TO FIX THIS
