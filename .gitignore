@@ -1,4 +1,3 @@
-test.log
-test.log.redirects
+test.log*
 pyrightconfig.json
 .nill*
