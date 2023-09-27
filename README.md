@@ -12,16 +12,21 @@ This tester uses {https://docs.google.com/spreadsheets/d/1uJHQu0VPsjjBkR4hxOeCME
 python3 testing_msh.py > test.log
 ```
 - Outputs are compared with STDOUT, STDERR, and Return Value by default but you can remove checks with the flags --no_stdout (-no), --no_stderr (-ne), and --no_return (-nr) respectively.
+	- Only prints diff of Return results.
+
 ```
-python3 testing_msh.py -no -ne > test.log		### only prints diff of Return results.
+python3 testing_msh.py -no -ne > test.log
 ```
 - If one positional argument is given (as an integer) only one test will be run
+	- Test only test 515 and output to terminal.
+
 ```
-python3 testing_msh.py 515		### test only test 515 and output to terminal.
+python3 testing_msh.py 515
 ```
 - If two positional arguments are given (as integers), the test will inclusively run the range of tests given. 
+	- Run tests 515, 516 and 517 and print to terminal.
 ```
-python3 testing_msh.py 515 517		### run tests 515, 516 and 517 and print to terminal.
+python3 testing_msh.py 515 517
 ```
 
 # Installation:
