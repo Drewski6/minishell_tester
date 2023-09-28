@@ -56,15 +56,12 @@ ignore_list = [i - offset for i in
  368, # tests history
  392,393,394,395,# tests pwd with options
  455,456,457,458, # idk spreadhseet says these are unhandled
- 59,60,575,576,578,579,580,581,582,5823,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
+ 59,60,575,576,578,579,580,581,582,583,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
+250, 251, # export with options.
 ]]
 #still included
 # 71,129,140,141,142,143,144,145,146,147,148,149,447,448,449,764,765,766,767,768,769, #tests bonus feature (wildcard)
 # 
-# 601 is
-# 459 does chmod 000 on minishell rendering all tests failure afterwards
-# 655 our minishell outputs garbage after NEED TO FIX THIS
-
 
 def tab_form(check: str):
     return str(check).replace("\n", "\n            ")
