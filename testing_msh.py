@@ -59,6 +59,12 @@ ignore_list = [i - offset for i in
  59,60,575,576,578,579,580,581,582,583,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
 250, 251, # export with options.
 ]]
+
+valgrind_ignore_list = [i - offset for i in 
+[
+459,
+537, 538 # contain the command ifconfig which apparently leaks
+]]
 #still included
 # 71,129,140,141,142,143,144,145,146,147,148,149,447,448,449,764,765,766,767,768,769, #tests bonus feature (wildcard)
 # 
@@ -126,19 +132,40 @@ def run_test(test: str):
     else:
         print(f" Error!\n\n{test}")
         print("    RESULTS MINISHELL")
-        # print(f"    test:    {tab_form(test)}")
         print(f"{line_form(stdoutdiff)}stdout: {tab_form(result_msh.stdout)}")
         print(f"{line_form(stderrdiff)}stderr: {tab_form(result_msh.stderr[:-1])}")
         print(f"{line_form(returndiff)}return: {tab_form(str(result_msh.returncode))}")
 
         print("\n    RESULTS BASH")
-        # print(f"    test:    {tab_form(test)}")
         print(f"{line_form(stdoutdiff)}stdout: {tab_form(result_bash.stdout)}")
         print(f"{line_form(stderrdiff)}stderr: {tab_form(result_bash.stderr)}")
         print(
             f"{line_form(returndiff)}return: {tab_form(str(result_bash.returncode))}\n"
         )
     return 1
+
+
+def run_test_valgrind(test):
+    result_msh = sp.run(
+        f"echo '{test}' | valgrind --leak-check=full --track-origins=yes --track-fds=yes --trace-children=yes --show-leak-kinds=all --suppressions=/mnt/nfs/homes/dpentlan/Documents/ecole_42/minishell/supp.supp {minishell_path}",
+        shell=True,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        text=True,
+        cwd=cwd,
+    )
+    # if "blocks are indirectly lost" in result_msh.stderr:
+    #     print(f"{result_msh.stderr}")
+    #     return 1
+    for line in result_msh.stderr.split("\n"):
+        if "definitely lost" in line or "indirectly lost" in line or "possibly lost" in line or "still reachable" in line:
+            if " 0 " not in line:
+                if args.valgrind_stderr:
+                    print(result_msh.stderr)
+                return 1
+    print("*", end="", flush=True)
+    return 0
+
 
 
 def get_test_input(line: int):
@@ -183,6 +210,18 @@ parser.add_argument(
     action="store_false",
     help="test will skip comparisons to return."
 )
+parser.add_argument(
+    "--valgrind",
+    "-vg",
+    action="store_true",
+    help="test will run in valgrind."
+)
+parser.add_argument(
+    "--valgrind_stderr",
+    "-vge",
+    action="store_true",
+    help="test will run in valgrind and print valgrinds error info."
+)
 args = parser.parse_args()
 df = pd.read_excel(testing_file)
 test_col = 1
@@ -194,17 +233,31 @@ if args.arg1 != -1 and args.arg2 == -1:
     line = args.arg1 - offset
     tests_conducted = tests_conducted + 1
     test = get_test_input(line)
-    if not run_test(test):
+    if args.valgrind or args.valgrind_stderr:
+        if not run_test_valgrind(test):
+            tests_succeeded = tests_succeeded + 1
+        else:
+            print(f"test {line + 2} Failed valgrind")
+    elif not run_test(test):
         tests_succeeded = tests_succeeded + 1
     cleanup_test_files(files_to_delete)
 else:
     for line in range(start, end):
-        if line in ignore_list:
-            continue
+        if args.valgrind or args.valgrind_stderr:
+            if line in valgrind_ignore_list:
+                continue
+        else:
+            if line in ignore_list:
+                continue
         test = get_test_input(line)
         tests_conducted = tests_conducted + 1
-        if not run_test(test):
-            tests_succeeded = tests_succeeded + 1
+        if args.valgrind or args.valgrind_stderr:
+            if not run_test_valgrind(test):
+                tests_succeeded = tests_succeeded + 1
+            else:
+                print(f"test {line + 2} Failed valgrind")
+        elif not run_test(test):
+                tests_succeeded = tests_succeeded + 1
         cleanup_test_files(files_to_delete)
 
 print_results(tests_conducted, tests_succeeded)
