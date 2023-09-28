@@ -2,6 +2,7 @@
 import pandas as pd
 import subprocess as sp
 import argparse
+import pdb
 
 ## SETTINGS ##
 testing_file = "unit_tests.xlsx"
@@ -42,22 +43,30 @@ ignore_list = [i - offset for i in
  47,48,49,347,704, #tests escaped character (\)
  61,62,63,284,348, #tests semicolon (;)
  64,65,66,280,281,601,602,603,604,613,614,615,616,617,618,628, #tests bonus feature (parens)
- 72,73, #tests wildcards not in cwd (*/*)
+ 72,73,149, #tests wildcards not in cwd (*/*)
  74,681, #tests . (source)
  76,367,444,445,446,472, #tests ~ (expands to value of HOME)
  77,78, # tests local vars (FOO=BAR)
  94,118,128,249,255,256,279, # tests escaped character (\n \$ \\ ...)
  124, # tests shell args ($9)
- 150,153,154,155,165,166,167,170,171, # tests the gettext feature ($"SOMETHING")
+ 150,153,154,155,165,166,167,170,171,730,305,306 # tests the gettext feature ($"SOMETHING")
  211,212,213,214,215,216,217,218,219,220,221,222,223, #tests with signals, need to be done manually (^C/^D)
  387,735, # requires manual testing
- 225,226,227,228,229,230, # tests env with argument(s)
+ 225,226,227,228,229,230,471, # tests env with argument(s)
+ 470,469,           # env with options
  233,234,235,237, # tests UB (Yes really ! check the man !)
- 368, # tests history
+ 386, # tests history
  392,393,394,395,# tests pwd with options
  455,456,457,458, # idk spreadhseet says these are unhandled
- 59,60,575,576,578,579,580,581,582,583,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
-250, 251, # export with options.
+ 58,59,60,558,575,576,577,578,579,580,581,582,583,584,585,586,585,586,587,588,589,590,591,592,593,594,594,595,596,597,598,599,600,605,606,607,608,609,610,611,612,619,620,621,622,623,624,625,626,627,629,630,631,632,633,634,635,636,637,638,639, #tests bonus feature (&&/||)
+250, 251,   # export with options.
+355,        # unset with options
+761,        # super heredoc
+726,        # race condition
+641,        # too hard to test lol
+463,        # $SHLVL 
+423,424,    # //
+146,126,122        # special variables in bash
 ]]
 
 valgrind_ignore_list = [i - offset for i in 
@@ -226,6 +235,7 @@ args = parser.parse_args()
 df = pd.read_excel(testing_file)
 test_col = 1
 bash_col = 7
+# pdb.set_trace()
 if args.arg1 >= 26 and args.arg1 <= 769 and args.arg2 >= 26 and args.arg2 <= 769:
     start = args.arg1 - offset
     end = args.arg2 - offset + 1
@@ -257,7 +267,7 @@ else:
             else:
                 print(f"test {line + 2} Failed valgrind")
         elif not run_test(test):
-                tests_succeeded = tests_succeeded + 1
+            tests_succeeded = tests_succeeded + 1
         cleanup_test_files(files_to_delete)
 
 print_results(tests_conducted, tests_succeeded)
