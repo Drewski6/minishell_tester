@@ -49,7 +49,7 @@ ignore_list = [i - offset for i in
  77,78, # tests local vars (FOO=BAR)
  94,118,128,249,255,256,279, # tests escaped character (\n \$ \\ ...)
  124, # tests shell args ($9)
- 150,153,154,155,165,166,167,170,171,730,305,306 # tests the gettext feature ($"SOMETHING")
+ 150,153,154,155,165,166,167,170,171,730,305,306, # tests the gettext feature ($"SOMETHING")
  211,212,213,214,215,216,217,218,219,220,221,222,223, #tests with signals, need to be done manually (^C/^D)
  387,735, # requires manual testing
  225,226,227,228,229,230,471, # tests env with argument(s)
