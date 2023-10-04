@@ -159,7 +159,7 @@ def run_test(test: str):
 
 def run_test_valgrind(test):
     result_msh = sp.run(
-        f"echo '{test}' | valgrind --leak-check=full --track-origins=yes --track-fds=yes --trace-children=yes --show-leak-kinds=all --suppressions=/mnt/nfs/homes/dpentlan/Documents/ecole_42/minishell/supp.supp {minishell_path}",
+        f"echo '{test}' | valgrind --leak-check=full --track-origins=yes --track-fds=yes --trace-children=yes --show-leak-kinds=all --suppressions={cwd}/supp.supp {minishell_path}",
         shell=True,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
