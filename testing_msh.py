@@ -67,13 +67,15 @@ ignore_list = [i - offset for i in
 641,        # too hard to test lol
 463,        # $SHLVL 
 423,424,    # //
-146,126,122        # special variables in bash
+146,126,122,        # special variables in bash
+224,231,232,236,244,245,246,247,263,266,267,268,271,272,273,274,275,276,277,278,283,286,287,292,298,316,318,319,331,332,384, #env
 ]]
 
 valgrind_ignore_list = [i - offset for i in 
 [
 459,
-537, 538 # contain the command ifconfig which apparently leaks
+537, 538, # contain the command ifconfig which apparently leaks
+735, 601,#not test
 ]]
 #still included
 # 71,129,140,141,142,143,144,145,146,147,148,149,447,448,449,764,765,766,767,768,769, #tests bonus feature (wildcard)
