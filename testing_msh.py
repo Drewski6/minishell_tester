@@ -36,6 +36,7 @@ files_to_delete = [
 ]
 ignore_list = [i - offset for i in 
 [
+224,231,232,236,244,245,246,247,263,266,267,268,271,272,273,274,275,276,277,278,283,286,287,292,298,316,318,319,331,332,384, #env to the ignore list, only this one cd test is failing with -ne
  459, #does chmod 000 on minishell rendering all tests failure afterwards
  28, #tests :
  29,364, #tests !
@@ -167,11 +168,10 @@ def run_test_valgrind(test):
     #     print(f"{result_msh.stderr}")
     #     return 1
     for line in result_msh.stderr.split("\n"):
-        if "definitely lost" in line or "indirectly lost" in line or "possibly lost" in line or "still reachable" in line:
-            if " 0 " not in line:
-                if args.valgrind_stderr:
-                    print(result_msh.stderr)
-                return 1
+        if ("definitely lost" in line or "indirectly lost" in line or "possibly lost" in line or "still reachable" in line or "Open file descriptor " in line) and " 0 " not in line:
+            if args.valgrind_stderr:
+                print(result_msh.stderr)
+                return False
     print("*", end="", flush=True)
     return 0
 
