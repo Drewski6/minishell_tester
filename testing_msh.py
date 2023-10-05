@@ -3,6 +3,7 @@ import pandas as pd
 import subprocess as sp
 import argparse
 import pdb
+import re
 
 ## SETTINGS ##
 testing_file = "unit_tests.xlsx"
@@ -106,39 +107,32 @@ def print_results(tests_conducted: int, tests_succeeded: int):
     print(f"Percentage : {tests_succeeded / tests_conducted * 100:.2f}%")
 
 
+
+
+def single_test(test, command):
+    result = sp.run(
+        f"echo '{test}' | {command}",
+        shell=True,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        text=True,
+        cwd=cwd,
+    )
+    result.stderr = re.sub(r"bash: line \d*:", "shell:", result.stderr)
+    result.stderr = re.sub(r"^minishell:", "shell:", result.stderr)
+    return result
+
+
 def run_test(test: str):
-    stdoutdiff = False
-    stderrdiff = False
-    returndiff = False
-    result_msh = sp.run(
-        f"echo '{test}' | {minishell_path}",
-        shell=True,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        text=True,
-        cwd=cwd,
-    )
-    result_bash = sp.run(
-        f"echo '{test}' | {bash_path}",
-        shell=True,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        text=True,
-        cwd=cwd,
-    )
-    if args.no_stdout:
-        if result_msh.stdout != result_bash.stdout:
-            stdoutdiff = True
-    if args.no_stderr:
-        if result_msh.stderr != result_bash.stderr:
-            stderrdiff = True
-    if args.no_return:
-        if result_msh.returncode != result_bash.returncode:
-            returndiff = True
+    result_msh = single_test(test, minishell_path)
+    result_bash = single_test(test, bash_path)
+    stdoutdiff = args.no_stdout and (result_msh.stdout != result_bash.stdout)
+    stderrdiff = args.no_stderr and (result_msh.stderr != result_bash.stderr)
+    returndiff = args.no_return and (result_msh.returncode != result_bash.returncode)
     print(f"TEST {line + offset}", end="")
     if not stdoutdiff and not stderrdiff and not returndiff:
         print(" OK!")
-        return 0
+        return True
     else:
         print(f" Error!\n\n{test}")
         print("    RESULTS MINISHELL")
@@ -152,29 +146,21 @@ def run_test(test: str):
         print(
             f"{line_form(returndiff)}return: {tab_form(str(result_bash.returncode))}\n"
         )
-    return 1
+    return False
 
 
-def run_test_valgrind(test):
-    result_msh = sp.run(
-        f"echo '{test}' | valgrind --leak-check=full --track-origins=yes --track-fds=yes --trace-children=yes --show-leak-kinds=all --suppressions=/mnt/nfs/homes/dpentlan/Documents/ecole_42/minishell/supp.supp {minishell_path}",
-        shell=True,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        text=True,
-        cwd=cwd,
-    )
-    # if "blocks are indirectly lost" in result_msh.stderr:
-    #     print(f"{result_msh.stderr}")
-    #     return 1
+def run_test_valgrind(test: str, line: int):
+    result_msh = single_test(test, f"valgrind --leak-check=full --track-origins=yes --track-fds=yes --trace-children=yes --show-leak-kinds=all --suppressions=/mnt/nfs/homes/dpentlan/Documents/ecole_42/minishell/supp.supp {minishell_path}")
+    print(f"\nTEST {line + offset}", end="")
+    print(f"\n\n{test}")
+    print(result_msh.stderr)
     for line in result_msh.stderr.split("\n"):
         if ("definitely lost" in line or "indirectly lost" in line or "possibly lost" in line or "still reachable" in line or "Open file descriptor " in line) and " 0 " not in line:
             if args.valgrind_stderr:
-                print(result_msh.stderr)
                 return False
+    print(f"RETURN: {result_msh.returncode}")
     print("*", end="", flush=True)
-    return 0
-
+    return True
 
 
 def get_test_input(line: int):
@@ -184,6 +170,23 @@ def get_test_input(line: int):
     test = "\n".join(tests)
     test += "\n"
     return test
+
+
+def test_select(line):
+    test = get_test_input(line)
+    if args.valgrind or args.valgrind_stderr:
+        if run_test_valgrind(test, line):
+            cleanup_test_files(files_to_delete)
+            return True
+        else:
+            print(f"test {line + 2} Failed valgrind")
+            cleanup_test_files(files_to_delete)
+            return False
+    elif run_test(test):
+        cleanup_test_files(files_to_delete)
+        return True
+    cleanup_test_files(files_to_delete)
+    return False
 
 
 parser = argparse.ArgumentParser(description="A tester for minishell.")
@@ -235,22 +238,13 @@ args = parser.parse_args()
 df = pd.read_excel(testing_file)
 test_col = 1
 bash_col = 7
-# pdb.set_trace()
 if args.arg1 >= 26 and args.arg1 <= 769 and args.arg2 >= 26 and args.arg2 <= 769:
     start = args.arg1 - offset
     end = args.arg2 - offset + 1
 if args.arg1 != -1 and args.arg2 == -1:
     line = args.arg1 - offset
-    tests_conducted = tests_conducted + 1
-    test = get_test_input(line)
-    if args.valgrind or args.valgrind_stderr:
-        if not run_test_valgrind(test):
-            tests_succeeded = tests_succeeded + 1
-        else:
-            print(f"test {line + 2} Failed valgrind")
-    elif not run_test(test):
-        tests_succeeded = tests_succeeded + 1
-    cleanup_test_files(files_to_delete)
+    tests_conducted += 1
+    tests_succeeded += test_select(line)
 else:
     for line in range(start, end):
         if args.valgrind or args.valgrind_stderr:
@@ -259,15 +253,8 @@ else:
         else:
             if line in ignore_list:
                 continue
-        test = get_test_input(line)
-        tests_conducted = tests_conducted + 1
-        if args.valgrind or args.valgrind_stderr:
-            if not run_test_valgrind(test):
-                tests_succeeded = tests_succeeded + 1
-            else:
-                print(f"test {line + 2} Failed valgrind")
-        elif not run_test(test):
-            tests_succeeded = tests_succeeded + 1
-        cleanup_test_files(files_to_delete)
+        tests_conducted += 1
+        tests_succeeded += test_select(line)
+
 
 print_results(tests_conducted, tests_succeeded)
